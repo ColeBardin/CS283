@@ -51,11 +51,13 @@ int main(int argc, char **argv){
 		return FILE_ACCESS_ERR;
 	}
 
-	compareFiles(file0, argv[FILE0_INDEX], file1, argv[FILE1_INDEX]);
+	ret = compareFiles(file0, argv[FILE0_INDEX], file1, argv[FILE1_INDEX]);
 
 	/* Close files upon exit */
 	fclose(file0);
 	fclose(file1);
+
+	return ret;
 }
 
 void usage(void){
@@ -119,3 +121,4 @@ int compareFiles(FILE *f0, char *fn0, FILE *f1, char *fn1){
 	/* If control reaches here, files are identical */
 	return FILE_IDENTICAL;
 }
+
