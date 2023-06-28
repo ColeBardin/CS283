@@ -1,0 +1,17 @@
+
+
+    As a warm-up, write a simple version of the cmp utility in C.  Do not attempt to implement the full GNU version of cmp.  Instead implement what is described in the following "man page" adapted from 6th Edition UNIX.  The programs discussed in the lecture and videos will include all the techniques that you'll need for this program.
+
+    NAME
+
+    cmp - compare two files
+
+    SYNOPSIS
+
+    cmp file1 file2
+
+    DESCRIPTION
+
+    The two files are compared.  cmp makes no comment if the files are the same; if they differ, it announces the byte and line number at which the difference occurred.  If one ﬁle is an initial subsequence of the other, that fact is noted.  Moreover, return code 0 is yielded for identical ﬁles, 1 for different ﬁles, and 2 for an inaccessible or missing argument.
+
+    Due July 9, 2023, 11:55pm
