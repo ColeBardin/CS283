@@ -13,14 +13,12 @@
 
 void usage(void);
 void fopenERR(char *fn);
+int compareFiles(FILE *f0, char *fn0, FILE *f1, char *fn1);
 
 int main(int argc, char **argv){
 	FILE *file0;
 	FILE *file1;
-	int byteCount;
-	int lineNumber;
-	char f0Char;
-	char f1Char;
+	int ret;
 
 	/* Check number of arguments passed */
 	if(argc != EXPECTED_ARGC){
@@ -53,55 +51,71 @@ int main(int argc, char **argv){
 		return FILE_ACCESS_ERR;
 	}
 
+	compareFiles(file0, argv[FILE0_INDEX], file1, argv[FILE1_INDEX]);
+
+	/* Close files upon exit */
+	fclose(file0);
+	fclose(file1);
+}
+
+void usage(void){
+	printf("Usage: cmp file1 file2\n");
+}
+
+void fopenERR(char *fn){
+	if(errno == ENOENT){
+		/* File does not exist error */
+		fprintf(stderr, "ERROR: Cannot find file %s\n", fn);
+	}else if(errno == EACCES){
+		/* File permissions error */
+		fprintf(stderr, "ERROR: Cannot access file %s. Check permissions\n", fn);
+	}else{
+		/* All other errors */
+		fprintf(stderr, "ERROR: Unexpected error (0x%x) while opening file %s\n", errno, fn);
+	}
+}
+
+int compareFiles(FILE *f0, char *fn0, FILE *f1, char *fn1){
+	int byteCount;
+	int lineNumber;
+	char f0Char;
+	char f1Char;
+
+	/* Set counters */
 	lineNumber = 1;
 	byteCount = 1;
+	/* Set char values so they don't init to EOF */
 	f0Char = 0;
 	f1Char = 0;
 
 	/* Compare each byte */
 	while(f0Char != EOF && f1Char != EOF){
-		f0Char = fgetc(file0);
-		f1Char = fgetc(file1);
+		f0Char = fgetc(f0);
+		f1Char = fgetc(f1);
 
 		/* Check if characters are different */
 		if(f0Char != f1Char){
 			if(f0Char == EOF && f1Char != EOF){
 				/* If end of file 0 has been reached */
-				printf("file1 (%s) is initial subsequence of file2 (%s)\n", argv[FILE0_INDEX], argv[FILE1_INDEX]);
+				printf("file1 (%s) is initial subsequence of file2 (%s)\n", fn0, fn1);
 			}else if(f0Char != EOF && f1Char == EOF){
 				/* If end of file 1 has been reached */
-				printf("file2 (%s) is initial subsequence of file1 (%s)\n", argv[FILE1_INDEX], argv[FILE0_INDEX]);
+				printf("file2 (%s) is initial subsequence of file1 (%s)\n", fn1, fn0);
 			}else{
 				/* No EOFs, just two different characters */
 				printf("Files are different at byte %d on line %d\n", byteCount, lineNumber);
 			}
-			fclose(file0);
-			fclose(file1);
 			return FILE_DIFFERENT;
 		}
 
+		/* Track newlines and bytes */
 		if(f0Char == '\n'){
 			lineNumber++;
 		}
 		byteCount++;
 	}
 
-	fclose(file0);
-	fclose(file1);
+
+	/* If control reaches here, files are identical */
 	return FILE_IDENTICAL;
 }
-
-void usage(void){
-	printf("cmp file1 file2\n");
-}
-
-void fopenERR(char *fn){
-	if(errno == ENOENT){
-		fprintf(stderr, "ERROR: Cannot find file %s\n", fn);
-	}else if(errno == EACCES){
-		fprintf(stderr, "ERROR: Cannot access file %s. Check permissions\n", fn);
-	}else{
-		fprintf(stderr, "ERROR: Unknown error while opening file %s\n", fn);
-	}
-}
-
