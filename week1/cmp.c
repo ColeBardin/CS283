@@ -22,7 +22,7 @@ int main(int argc, char **argv){
 
 	/* Check number of arguments passed */
 	if(argc != EXPECTED_ARGC){
-		fprintf(stderr, "ERROR: Incorrect argument count. Received %d, expected %d argument(s)\n", argc-1, EXPECTED_ARGC-1);
+		fprintf(stderr, "ERROR: Incorrect number of input files. Received %d, expected %d argument(s)\n", argc-1, EXPECTED_ARGC-1);
 		usage();
 		return FILE_ACCESS_ERR;
 	}
