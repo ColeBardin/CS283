@@ -27,10 +27,8 @@ int main(int argc, char **argv){
 		return FILE_ACCESS_ERR;
 	}
 
-	/* Don't compare a file with itself */
+	/* No need to compare a file with itself if filenames are the same */
 	if(!strcmp(argv[FILE0_INDEX], argv[FILE1_INDEX])){
-		fprintf(stderr, "ERROR: Filenames are not unique\n");
-		usage();
 		return FILE_ACCESS_ERR;
 	}
 	
