@@ -5,47 +5,46 @@
 #define OUTPUT_WIDTH 300
 
 int main(void){
-	int ret, width, height, max;
-	int newWidth, newHeight, scaleFactor;
+	int ret, width, height, max, newWidth, newHeight, scaleFactor;
+	int i, row, col;
+	int bytesToRead, bytesToWrite;
+	int offset, scaledOffset;
 	char *old, *new;
 	char current;
-	int row, col;
-	int i;
-	int bytesToRead, bytesToWrite;
 	
+	/* Read PGM file header */
 	ret = scanf("P5 %d %d %d", &width, &height, &max);
 	if(ret != EXPECTED_HEADER_TERMS){
-		printf("ERROR: Failed to parse file header from PGM file on STDIN\n");
+		fprintf(stderr, "ERROR: Failed to parse file header from PGM file on STDIN\n");
 		return 1;
 	}
 
+	/* Calculate scaling factor */
 	scaleFactor = width / 300;
 	if(scaleFactor == 0){
 		scaleFactor = 1;
 	}
-
+	
+	/* Calculate new dimensions */
 	newWidth = width / scaleFactor;
 	newHeight = height / scaleFactor;
 
+	/* Allocate memory for input file data */
 	bytesToRead = width * height;
-
 	old = malloc(bytesToRead);
 	if(old == NULL){
-		printf("ERROR: Failed to allocate memory for original image\n");
+		fprintf(stderr, "ERROR: Failed to allocate memory for original image\n");
 		return 1;
 	}
 
+	/* Allocate memoryt for output file data */
 	bytesToWrite = (newWidth + 1) * newHeight;
 	new = malloc(bytesToWrite);
 	if(new == NULL){
-		printf("ERROR: Failed to allocate memory for new image\n");
+		fprintf(stderr, "ERROR: Failed to allocate memory for new image\n");
 		free(old);
 		return 1;
 	}
-	
-	current = 0;
-	row = 0;
-	col = 0;
 	
 	/* Read input file to memory */
 	for(i = 0; i < bytesToRead; i++){
@@ -53,14 +52,14 @@ int main(void){
 		*(old + i) = current;
 	}
 	
-	int offset;
 	/* Compress file */
 	for(row = 0; row < newHeight; row++){
 		for(col = 0; col < newWidth; col++){
-			offset = (col * scaleFactor) + (row * scaleFactor * width);
-			*(new + col + row * newWidth) = *(old + offset);
+			scaledOffset = (col * scaleFactor) + (row * scaleFactor * width);
+			offset = col + row * newWidth;
+			*(new + offset) = *(old + scaledOffset);
 		}
-		*(new + col + row * newWidth + 1) = '\n';
+		*(new + offset + 1) = '\n';
 	}
 
 	/* Output compressed file */
