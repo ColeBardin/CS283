@@ -2,10 +2,10 @@
 #include <stdlib.h>
 
 #define EXPECTED_HEADER_TERMS 3
-#define OUTPUT_WIDTH 300
+#define DESIRED_WIDTH 300
 
 int main(void){
-	int ret, width, height, max, newWidth, newHeight, scaleFactor;
+	int width, height, max, newWidth, newHeight, scaleFactor;
 	int i, row, col;
 	int bytesToRead, bytesToWrite;
 	int offset, scaledOffset;
@@ -13,14 +13,13 @@ int main(void){
 	char current;
 	
 	/* Read PGM file header */
-	ret = scanf("P5 %d %d %d", &width, &height, &max);
-	if(ret != EXPECTED_HEADER_TERMS){
+	if(scanf("P5 %d %d %d", &width, &height, &max) != EXPECTED_HEADER_TERMS){
 		fprintf(stderr, "ERROR: Failed to parse file header from PGM file on STDIN\n");
 		return 1;
 	}
 
 	/* Calculate scaling factor */
-	scaleFactor = width / 300;
+	scaleFactor = width / DESIRED_WIDTH;
 	if(scaleFactor == 0){
 		scaleFactor = 1;
 	}
@@ -38,7 +37,7 @@ int main(void){
 	}
 
 	/* Allocate memoryt for output file data */
-	bytesToWrite = (newWidth + 1) * newHeight;
+	bytesToWrite = newWidth * newHeight;
 	new = malloc(bytesToWrite);
 	if(new == NULL){
 		fprintf(stderr, "ERROR: Failed to allocate memory for new image\n");
@@ -52,17 +51,17 @@ int main(void){
 		*(old + i) = current;
 	}
 	
-	/* Compress file */
+	/* Compress file with Top-Left pixel favoring */
 	for(row = 0; row < newHeight; row++){
 		for(col = 0; col < newWidth; col++){
-			scaledOffset = (col * scaleFactor) + (row * scaleFactor * width);
 			offset = col + row * newWidth;
+			scaledOffset = (col * scaleFactor) + (row * scaleFactor * width);
 			*(new + offset) = *(old + scaledOffset);
 		}
 		*(new + offset + 1) = '\n';
 	}
 
-	/* Output compressed file */
+	/* Output compressed file to STDOUT */
 	printf("P5\n%d %d\n%d", newWidth, newHeight, max);
 	for(i = 0; i < bytesToWrite; i++){
 		putchar(*(new + i));
