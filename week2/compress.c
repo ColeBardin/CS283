@@ -58,6 +58,7 @@ int main(void){
 			scaledOffset = (col * scaleFactor) + (row * scaleFactor * width);
 			*(new + offset) = *(old + scaledOffset);
 		}
+		/* Add newline after each row */
 		*(new + offset + 1) = '\n';
 	}
 
