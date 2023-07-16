@@ -10,6 +10,7 @@ int main(int argc, char *argv[]){
 	FILE *fp;
 	int id;
 	
+	// Handle command line arguments from user
 	if(argc != 2){
 		fprintf(stderr, "Usage: ccdel id\n");
 		exit(1);
@@ -27,6 +28,7 @@ int main(int argc, char *argv[]){
 		}
 	}
 	flock(fileno(fp), LOCK_EX);
+	// Find
 	fseek(fp, id * sizeof(CComp), SEEK_SET);
 	fread(&oldcomp, sizeof(CComp), 1, fp);
 
