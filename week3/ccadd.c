@@ -12,12 +12,12 @@ main(int argc, char *argv[])
 	CComp newcomp;
 	FILE *fp;
 	struct stat buffer;
-	int largestID;
 
 	if(argc != 7) {
 		fprintf(stderr, "Usage: ccadd [id | -a] name maker cpu year desc\n");
 		exit(1);
 	}
+	// Copy command line arguments into the new struct, except ID
 	strncpy(newcomp.name, argv[2], Nname-1);
 	newcomp.name[Nname-1] = '\0';
 	strncpy(newcomp.maker, argv[3], Nmaker-1);
@@ -39,6 +39,7 @@ main(int argc, char *argv[])
 		}
 	}
 	flock(fileno(fp), LOCK_EX);
+	// If -a flag is given, find largest ID being used
 	if(!strncmp(argv[1], "-a", Nname-1)){
 		fstat(fileno(fp), &buffer);
 		newcomp.id = buffer.st_size / sizeof(CComp);
@@ -49,9 +50,12 @@ main(int argc, char *argv[])
 		newcomp.id = atoi(argv[1]);
 	}
 
+	// Write new data to file
 	fseek(fp, newcomp.id * sizeof(CComp), SEEK_SET);
 	fwrite(&newcomp, sizeof(CComp), 1, fp);
+
 	flock(fileno(fp), LOCK_UN);
 	fclose(fp);
 	exit(0);
 }
+
