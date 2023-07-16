@@ -51,11 +51,11 @@ int main(int argc, char *argv[]){
 	}
 	printf("Maker: %s\n", oldcomp.maker);
 	if(promptChange(response)){
-		strncpy(oldcomp.maker, response, Nname);
+		strncpy(oldcomp.maker, response, Nmaker);
 	}
 	printf("CPU: %s\n", oldcomp.cpu);
 	if(promptChange(response)){
-		strncpy(oldcomp.cpu, response, Nname);
+		strncpy(oldcomp.cpu, response, Ncpu);
 	}
 	printf("Year: %d\n", oldcomp.year);
 	if(promptChange(response)){
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
 	}
 	printf("Desc: %s\n", oldcomp.desc);
 	if(promptChange(response)){
-		strncpy(oldcomp.desc, response, Nname);
+		strncpy(oldcomp.desc, response, Ndesc);
 	}
 	// Write new data to file
 	fseek(fp, id * sizeof(CComp), SEEK_SET);
