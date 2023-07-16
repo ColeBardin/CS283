@@ -22,4 +22,4 @@ edit: ccedit.c
 	gcc -o edit ccedit.c -Wall -Werror -Wpedantic
 
 clean:
-	rm *.o item list del match year
+	rm *.o item list del match year edit
