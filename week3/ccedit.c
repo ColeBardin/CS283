@@ -33,8 +33,13 @@ int main(int argc, char *argv[]){
 	// Open file
 	fp = fopen("ccdb", "r+");
 	if(fp == NULL){
-		perror("fopen");
-		exit(2);
+		if(errno == ENOENT){
+			fp = fopen("ccdb", "w+");
+			if(fp == NULL){
+				perror("fopen");
+				exit(2);
+			}
+		}
 	}
 	flock(fileno(fp), LOCK_EX);
 	// Read specified ID if valid
