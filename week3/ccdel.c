@@ -15,7 +15,10 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Usage: ccdel id\n");
 		exit(1);
 	}
-	id = atoi(argv[1]);
+	if(id = atoi(argv[1]) == 0){
+		fprintf(stderr, "ID number must be greater than 0\n");
+		exit(1);
+	}
 	
 	fp = fopen("ccdb", "r+");
 	if(fp == NULL){
@@ -28,10 +31,14 @@ int main(int argc, char *argv[]){
 		}
 	}
 	flock(fileno(fp), LOCK_EX);
-	// Find
+	// Attempt to read item with given ID
 	fseek(fp, id * sizeof(CComp), SEEK_SET);
-	fread(&oldcomp, sizeof(CComp), 1, fp);
+	if(fread(&oldcomp, sizeof(CComp), 1, fp) == 0){
+		fprintf(stderr, "No such item %d in database\n", id);
+		exit(3)
+	}
 
+	// Clear data in structure, setting ID to 0
 	memset(oldcomp.name, 0, Nname);
 	memset(oldcomp.maker, 0, Nmaker);
 	memset(oldcomp.cpu, 0, Ncpu);
@@ -39,10 +46,12 @@ int main(int argc, char *argv[]){
 	oldcomp.id = 0;
 	memset(oldcomp.desc, 0, Ndesc);
 
+	// Write zeroed data to file
 	fseek(fp, id * sizeof(CComp), SEEK_SET);
 	fwrite(&oldcomp, sizeof(CComp), 1, fp);
 
 	flock(fileno(fp), LOCK_UN);	
 	fclose(fp);
+	exit(0);
 }
 
