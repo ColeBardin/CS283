@@ -1,4 +1,4 @@
-all: add item list del match year 
+all: add item list del match year edit
 
 add: ccadd.c
 	gcc -o add ccadd.c -Wall -Werror -Wpedantic
@@ -17,6 +17,9 @@ match: ccmatch.c
 
 year: ccyear.c
 	gcc -o year ccyear.c -Wall -Werror -Wpedantic
+
+edit: ccedit.c
+	gcc -o edit ccedit.c -Wall -Werror -Wpedantic
 
 clean:
 	rm *.o item list del match year
