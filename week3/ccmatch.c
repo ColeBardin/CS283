@@ -6,8 +6,21 @@
 #include <sys/stat.h>
 #include "cc.h"
 
+/**
+ Determines if str1 is a substring of str1
+ @param str1 target string
+ @param str2 string to search in 
+ @return 1 if str1 is a substring of str2, 0 otherwise
+ */
 int isSubstr(char *str1, char *str2);
-int isMatch(struct CComp *comp, char *match);
+
+/**
+ Checks if any attributes of CComp contain a substring
+ @param comp CComp struct to search through
+ @param match string to search for in comp attributes
+ @return 1 if any attributes of comp contain match, 0 otherwise
+ */
+int isMatch(CComp *comp, char *match);
 
 int main(int argc, char *argv[]){
 	CComp comp;
@@ -16,6 +29,7 @@ int main(int argc, char *argv[]){
 	char *match;
 	int i;
 	
+	// Handle command line arguments from user
 	if(argc != 2){
 		fprintf(stderr, "Usage: ccmatch str\n");
 		exit(1);
@@ -36,8 +50,9 @@ int main(int argc, char *argv[]){
 	fstat(fileno(fp), &buffer);
 	if(buffer.st_size == 0){
 		fprintf(stderr, "No items in database to search\n");
-		exit(0);	
+		exit(3);	
 	}
+	// Try each entry in ccdb for any matches. Print out details if match is found
 	for(i = 1; i < buffer.st_size / sizeof(CComp); i++){
 		fseek(fp, i * sizeof(CComp), SEEK_SET);
 		fread(&comp, sizeof(CComp), 1, fp);	
@@ -55,11 +70,13 @@ int main(int argc, char *argv[]){
 
 	flock(fileno(fp), LOCK_UN);	
 	fclose(fp);
+	exit(0);
 }
 
 int isSubstr(char *str1, char *str2){
 	int i, n;
 	
+	// Check for substrings of str1 in str2
 	n = strlen(str1);
 	for(i = 0; i < strlen(str2); i++){
 		if(str2[i] == str1[0]){
@@ -72,6 +89,7 @@ int isSubstr(char *str1, char *str2){
 }
 
 int isMatch(struct CComp *comp, char *match){
+	// Test all attriutes of comp for matches
 	if(isSubstr(match, comp->maker)){
 		return 1;
 	}
@@ -83,7 +101,4 @@ int isMatch(struct CComp *comp, char *match){
 	}
 	return 0;
 }
-
-
-
 
