@@ -25,7 +25,8 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-	if((id = atoi(argv[1])) <= 0){
+	id = atoi(argv[1]);
+	if(id <= 0){
 		fprintf(stderr, "ID number must be greater than 0\n");
 		exit(1);
 	}
