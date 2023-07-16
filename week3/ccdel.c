@@ -15,7 +15,7 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Usage: ccdel id\n");
 		exit(1);
 	}
-	if(id = atoi(argv[1]) == 0){
+	if((id = atoi(argv[1]) == 0)){
 		fprintf(stderr, "ID number must be greater than 0\n");
 		exit(1);
 	}
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
 	fseek(fp, id * sizeof(CComp), SEEK_SET);
 	if(fread(&oldcomp, sizeof(CComp), 1, fp) == 0){
 		fprintf(stderr, "No such item %d in database\n", id);
-		exit(3)
+		exit(3);
 	}
 
 	// Clear data in structure, setting ID to 0
