@@ -15,10 +15,12 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Usage: ccdel id\n");
 		exit(1);
 	}
-	if((id = atoi(argv[1]) == 0)){
+
+	id = atoi(argv[1]);
+	if(id == 0){
 		fprintf(stderr, "ID number must be greater than 0\n");
 		exit(1);
-	}
+	} 
 	
 	fp = fopen("ccdb", "r+");
 	if(fp == NULL){
@@ -38,13 +40,13 @@ int main(int argc, char *argv[]){
 		exit(3);
 	}
 
-	// Clear data in structure, setting ID to 0
-	memset(oldcomp.name, 0, Nname);
-	memset(oldcomp.maker, 0, Nmaker);
-	memset(oldcomp.cpu, 0, Ncpu);
-	oldcomp.year = 0;
+	// Set ID to 0 to mark as deleted
+	oldcomp.name[0] = '\0';
+	oldcomp.maker[0] = '\0';
+	oldcomp.cpu[0] = '\0';
 	oldcomp.id = 0;
-	memset(oldcomp.desc, 0, Ndesc);
+	oldcomp.year = 0;
+	oldcomp.desc[0] = '\0';
 
 	// Write zeroed data to file
 	fseek(fp, id * sizeof(CComp), SEEK_SET);
