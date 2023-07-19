@@ -36,6 +36,7 @@ int main(int argc, char *argv[]){
 	}
 	match = argv[1];
 	
+	// Open file
 	fp = fopen("ccdb", "r+");
 	if(fp == NULL){
 		if(errno == ENOENT){
