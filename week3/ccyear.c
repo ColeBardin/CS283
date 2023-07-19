@@ -13,6 +13,7 @@ int main(int argc, char *argv[]){
 	int start, stop;
 	int i;
 	
+	// Handle user arguments
 	if(argc != 3){
 		fprintf(stderr, "Usage: ccyear startyr stopyr\n");
 		exit(1);
@@ -20,6 +21,7 @@ int main(int argc, char *argv[]){
 	start = atoi(argv[1]);
 	stop = atoi(argv[2]);
 	
+	// Open file
 	fp = fopen("ccdb", "r+");
 	if(fp == NULL){
 		if(errno == ENOENT){
@@ -31,11 +33,13 @@ int main(int argc, char *argv[]){
 		}
 	}
 	flock(fileno(fp), LOCK_EX);
+	// Use fstat to calculate the number of items
 	fstat(fileno(fp), &buffer);
 	if(buffer.st_size == 0){
 		fprintf(stderr, "No items in database to search\n");
 		exit(0);	
 	}
+	// Iterate through each item to see if its year is within the desired range
 	for(i = 1; i < buffer.st_size / sizeof(CComp); i++){
 		fseek(fp, i * sizeof(CComp), SEEK_SET);
 		fread(&comp, sizeof(CComp), 1, fp);	
@@ -53,5 +57,6 @@ int main(int argc, char *argv[]){
 
 	flock(fileno(fp), LOCK_UN);	
 	fclose(fp);
+	exit(0);
 }
 
