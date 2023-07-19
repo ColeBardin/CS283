@@ -206,7 +206,7 @@ void match(){
 	}
 	CHPID = fork();
 	if(CHPID == 0){
-		execl("./ccmatch", "./ccmatch", match, NULL);
+		execl("./ccmatch", "./ccmatch", word, NULL);
 	}else{
 		wait(&state);
 	}
