@@ -94,6 +94,7 @@ int promptChange(char *dest){
 	}else if(c == 'n' || c == 'N'){
 		return 0;
 	}else{
+		printf("Invalid response\n");
 		return promptChange(dest);
 	}
 }
