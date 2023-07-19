@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
 		exit(1);
 	} 
 	
+	// Open file
 	fp = fopen("ccdb", "r+");
 	if(fp == NULL){
 		if(errno == ENOENT){
