@@ -1,4 +1,4 @@
-all: add item list del match year edit
+all: add item list del match year edit ui
 
 add: ccadd.c
 	gcc -o ccadd ccadd.c -Wall -Werror -Wpedantic
@@ -21,5 +21,8 @@ year: ccyear.c
 edit: ccedit.c
 	gcc -o ccedit ccedit.c -Wall -Werror -Wpedantic
 
+ui: ccui.c
+	gcc -o ccui ccui.c -Wall -Werror -Wpedantic
+
 clean:
-	rm *.o ccitem cclist ccdel ccmatch ccyear ccedit
+	rm *.o ccitem cclist ccdel ccmatch ccyear ccedit ccui
