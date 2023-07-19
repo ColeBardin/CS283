@@ -161,7 +161,23 @@ void edit(){
 }
 
 void item(){
+	int ret;
+	int state;
+	pid_t CHPID;
+	char id[16];
 
+	printf("Enter the ID number to view:\n");
+	ret = scanf("%s", id);
+	if(ret != 1){
+		printf("Invalid input\n");
+		return;
+	}
+	CHPID = fork();
+	if(CHPID == 0){
+		execl("./ccitem", "./ccitem", id, NULL);
+	}else{
+		wait(&state);
+	}
 }
 
 void list(){
@@ -176,11 +192,44 @@ void list(){
 	}
 }
 
-void match(){
+void match(){	
+	int ret;
+	int state;
+	pid_t CHPID;
+	char word[32];
 
+	printf("Enter keyword to search for in DB:\n");
+	ret = scanf("%s", word);
+	if(ret != 1){
+		printf("Invalid input\n");
+		return;
+	}
+	CHPID = fork();
+	if(CHPID == 0){
+		execl("./ccmatch", "./ccmatch", match, NULL);
+	}else{
+		wait(&state);
+	}
 }
 
 void year(){
+	int ret;
+	int state;
+	pid_t CHPID;
+	char start[16];
+	char stop[16];
 
+	printf("Enter start and stop years separated by a space:\n");
+	ret = scanf("%s %s", start, stop);
+	if(ret != 2){
+		printf("Invalid input\n");
+		return;
+	}
+	CHPID = fork();
+	if(CHPID == 0){
+		execl("./ccyear", "./ccyear", start, stop, NULL);
+	}else{
+		wait(&state);
+	}
 }
 
