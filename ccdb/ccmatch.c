@@ -57,15 +57,17 @@ int main(int argc, char *argv[]){
 	for(i = 1; i < buffer.st_size / sizeof(CComp); i++){
 		fseek(fp, i * sizeof(CComp), SEEK_SET);
 		fread(&comp, sizeof(CComp), 1, fp);	
-		if(isMatch(&comp, match)){
-			printf("\n");
-			printf("Name: %s\n", comp.name);
-			printf("Maker: %s\n", comp.maker);
-			printf("CPU: %s\n", comp.cpu);
-			printf("Year: %d\n", comp.year);
-			printf("ID: %d\n", comp.id);
-			printf("Desc: %s\n", comp.desc);
-			printf("----------------\n");
+		if(i == comp.id){
+			if(isMatch(&comp, match)){
+				printf("\n");
+				printf("Name: %s\n", comp.name);
+				printf("Maker: %s\n", comp.maker);
+				printf("CPU: %s\n", comp.cpu);
+				printf("Year: %d\n", comp.year);
+				printf("ID: %d\n", comp.id);
+				printf("Desc: %s\n", comp.desc);
+				printf("----------------\n");
+			}
 		}
 	}
 
