@@ -16,6 +16,7 @@ void printMenu();
  */
 int getResponse(char *buf);
 
+void run(char **argv);
 void add();
 void delete();
 void edit();
@@ -95,8 +96,6 @@ int getResponse(char *buf){
 }
 
 void add(){
-	pid_t CHPID;
-	int state;
 	char id[16];
 	char name[Nname];
 	char maker[Nmaker];
@@ -104,6 +103,7 @@ void add(){
 	char year[16];
 	char desc[Ndesc];
 	int ret;
+	char *argv[8];
 
 	printf("Enter new item details in following format:\n");
 	printf("[id | -a] name maker cpu year desc\n");
@@ -112,19 +112,21 @@ void add(){
 		printf("Invalid input\n");
 		return;
 	}
-	CHPID = fork();
-	if(CHPID == 0){
-		execl("./ccadd", "./ccadd", id, name, maker, cpu, year, desc, NULL);
-	}else{
-		wait(&state);
-	}
+	argv[0] = "./ccadd";
+	argv[1] = id;
+	argv[2] = name;
+	argv[3] = maker;
+	argv[4] = cpu;
+	argv[5] = year;
+	argv[6] = desc;
+	argv[7] = NULL;
+	run(argv);
 }
 
 void delete(){
 	int ret;
-	int state;
-	pid_t CHPID;
 	char id[16];
+	char *argv[3];
 
 	printf("Enter the ID number to delete:\n");
 	ret = scanf("%s", id);
@@ -132,19 +134,16 @@ void delete(){
 		printf("Invalid input\n");
 		return;
 	}
-	CHPID = fork();
-	if(CHPID == 0){
-		execl("./ccdel", "./ccdel", id, NULL);
-	}else{
-		wait(&state);
-	}
+	argv[0] = "./ccdel";
+	argv[1] = id;
+	argv[2] = NULL;
+	run(argv);
 }
 
 void edit(){
 	int ret;
-	int state;
-	pid_t CHPID;
 	char id[16];
+	char *argv[3];
 
 	printf("Enter the ID number to edit:\n");
 	ret = scanf("%s", id);
@@ -152,19 +151,16 @@ void edit(){
 		printf("Invalid input\n");
 		return;
 	}
-	CHPID = fork();
-	if(CHPID == 0){
-		execl("./ccedit", "./ccedit", id, NULL);
-	}else{
-		wait(&state);
-	}
+	argv[0] = "./ccedit";
+	argv[1] = id;
+	argv[2] = NULL;
+	run(argv);
 }
 
 void item(){
 	int ret;
-	int state;
-	pid_t CHPID;
 	char id[16];
+	char *argv[3];
 
 	printf("Enter the ID number to view:\n");
 	ret = scanf("%s", id);
@@ -172,31 +168,24 @@ void item(){
 		printf("Invalid input\n");
 		return;
 	}
-	CHPID = fork();
-	if(CHPID == 0){
-		execl("./ccitem", "./ccitem", id, NULL);
-	}else{
-		wait(&state);
-	}
+	argv[0] = "./ccitem";
+	argv[1] = id;
+	argv[2] = NULL;
+	run(argv);
 }
 
 void list(){
-	int state;
-	pid_t CHPID;
+	char *argv[2];
 
-	CHPID = fork();
-	if(CHPID == 0){
-		execl("./cclist", "./cclist", NULL); 
-	}else{
-		wait(&state);
-	}
+	argv[0] = "./cclist";
+	argv[1] = NULL;
+	run(argv);
 }
 
 void match(){	
 	int ret;
-	int state;
-	pid_t CHPID;
 	char word[32];
+	char *argv[3];
 
 	printf("Enter keyword to search for in DB:\n");
 	ret = scanf("%s", word);
@@ -204,20 +193,17 @@ void match(){
 		printf("Invalid input\n");
 		return;
 	}
-	CHPID = fork();
-	if(CHPID == 0){
-		execl("./ccmatch", "./ccmatch", word, NULL);
-	}else{
-		wait(&state);
-	}
+	argv[0] = "./ccmatch";
+	argv[1] = word;
+	argv[2] = NULL;
+	run(argv);
 }
 
 void year(){
 	int ret;
-	int state;
-	pid_t CHPID;
 	char start[16];
 	char stop[16];
+	char *argv[4];
 
 	printf("Enter start and stop years separated by a space:\n");
 	ret = scanf("%s %s", start, stop);
@@ -225,9 +211,20 @@ void year(){
 		printf("Invalid input\n");
 		return;
 	}
+	argv[0] = "./ccyear";
+	argv[1] = start;
+	argv[2] = stop;
+	argv[3] = NULL;
+	run(argv);
+}
+
+void run(char **argv){
+	pid_t CHPID;
+	int state;
+
 	CHPID = fork();
 	if(CHPID == 0){
-		execl("./ccyear", "./ccyear", start, stop, NULL);
+		execv(argv[0], argv);
 	}else{
 		wait(&state);
 	}
