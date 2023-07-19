@@ -7,11 +7,11 @@
 #include "cc.h"
 
 /**
- Finds the lowest unused ID number. Overwrites deleted items with id=0 or appends to end of DB.
+ Gets the lowest unused ID number. Overwrites deleted items with id=0 or appends to end of DB.
  @param fp FILE pointer to opened ccdb file
  @return ID number to use
  */
-int findNewId(FILE* fp);
+int getNewId(FILE* fp);
 
 int main(int argc, char *argv[]){
 	CComp newcomp;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 	flock(fileno(fp), LOCK_EX);
 	// If -a flag is given, find largest ID being used
 	if(!strncmp(argv[1], "-a", Nname-1)){
-		newcomp.id = findNewId(fp);
+		newcomp.id = getNewId(fp);
 	}else{
 		newcomp.id = atoi(argv[1]);
 	}
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 	exit(0);
 }
 
-int findNewId(FILE* fp){
+int getNewId(FILE* fp){
 	CComp item;
 	struct stat buffer;
 	int id, fstatid;
