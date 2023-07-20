@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 	for(i = 1; i < buffer.st_size / sizeof(CComp); i++){
 		fseek(fp, i * sizeof(CComp), SEEK_SET);
 		fread(&comp, sizeof(CComp), 1, fp);	
-		if(id == comp.id){
+		if(i == comp.id){
 			if(comp.year >= start && comp.year <= stop){
 				printf("\n");
 				printf("Name: %s\n", comp.name);
