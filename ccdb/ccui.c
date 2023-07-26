@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "cc.h"
 
@@ -10,19 +8,52 @@
  Prints out the menu and the options
  */
 void printMenu();
+
 /**
  Reads the user reponse handles it
  @return -1 when user enters quit option, 0 otherwise
  */
 int getResponse(char *buf);
 
+/**
+ Runs a given argument vector with execv
+ @param argv argument vector to run on command line, appeneded with NULL to signal end of list
+ */
 void run(char **argv);
+
+/**
+ Prompts the user for parameters to add an entry to the database, runs the add program
+ */
 void add();
+
+/**
+ Prompts the user for ID number to delete, runs delete program
+ */
 void delete();
+
+/**
+ Prompts the user for ID number to edit, runs edit program
+ */
 void edit();
+
+/**
+ Prompts the user for ID numner to display, runs the item program
+ */
 void item();
+
+/**
+ Runs the list program
+ */
 void list();
+
+/**
+ Prompts the user for a keyword to match, runs the match program
+ */
 void match();
+
+/**
+ Prompts the user for start and stop years, runs the year program
+ */
 void year();
 
 int main(int argc, char **argv){
@@ -32,6 +63,7 @@ int main(int argc, char **argv){
 	ret = 0;
 	printf("Classic Computer Database\n");
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	// Print menu and process response until user quits
 	while(ret != -1){
 		printMenu();
 		ret = getResponse(responseBuf);
@@ -54,6 +86,7 @@ void printMenu(){
 }
 
 int getResponse(char *buf){
+	// Read user input and handle command
 	scanf("%s", buf);
 	switch(buf[0]){
 		case 'a':
@@ -105,6 +138,7 @@ void add(){
 	int ret;
 	char *argv[8];
 
+	// Get input parameters from user
 	printf("Enter new item details in following format:\n");
 	printf("[id | -a] name maker cpu year desc\n");
 	ret = scanf("%s %s %s %s %s %s", id, name, maker, cpu, year, desc);
@@ -112,6 +146,7 @@ void add(){
 		printf("Invalid input\n");
 		return;
 	}
+	// Build argv and run it
 	argv[0] = "./ccadd";
 	argv[1] = id;
 	argv[2] = name;
@@ -128,12 +163,14 @@ void delete(){
 	char id[16];
 	char *argv[3];
 
+	// Get ID from user
 	printf("Enter the ID number to delete:\n");
 	ret = scanf("%s", id);
 	if(ret != 1){
 		printf("Invalid input\n");
 		return;
 	}
+	// Build argv and run it
 	argv[0] = "./ccdel";
 	argv[1] = id;
 	argv[2] = NULL;
@@ -145,12 +182,14 @@ void edit(){
 	char id[16];
 	char *argv[3];
 
+	// Get ID from user
 	printf("Enter the ID number to edit:\n");
 	ret = scanf("%s", id);
 	if(ret != 1){
 		printf("Invalid input\n");
 		return;
 	}
+	// Build argv and run it
 	argv[0] = "./ccedit";
 	argv[1] = id;
 	argv[2] = NULL;
@@ -162,12 +201,14 @@ void item(){
 	char id[16];
 	char *argv[3];
 
+	// Get ID from user
 	printf("Enter the ID number to view:\n");
 	ret = scanf("%s", id);
 	if(ret != 1){
 		printf("Invalid input\n");
 		return;
 	}
+	// Build argv and run it
 	argv[0] = "./ccitem";
 	argv[1] = id;
 	argv[2] = NULL;
@@ -177,6 +218,7 @@ void item(){
 void list(){
 	char *argv[2];
 
+	// Build argv and run it
 	argv[0] = "./cclist";
 	argv[1] = NULL;
 	run(argv);
@@ -187,12 +229,14 @@ void match(){
 	char word[32];
 	char *argv[3];
 
+	// Get keyword to search for from user
 	printf("Enter keyword to search for in DB:\n");
 	ret = scanf("%s", word);
 	if(ret != 1){
 		printf("Invalid input\n");
 		return;
 	}
+	// Build argv and run it
 	argv[0] = "./ccmatch";
 	argv[1] = word;
 	argv[2] = NULL;
@@ -205,12 +249,14 @@ void year(){
 	char stop[16];
 	char *argv[4];
 
+	// Get start and stop year from user
 	printf("Enter start and stop years separated by a space:\n");
 	ret = scanf("%s %s", start, stop);
 	if(ret != 2){
 		printf("Invalid input\n");
 		return;
 	}
+	// Build argv and run it
 	argv[0] = "./ccyear";
 	argv[1] = start;
 	argv[2] = stop;
@@ -222,6 +268,7 @@ void run(char **argv){
 	pid_t CHPID;
 	int state;
 
+	// Create child process and run argument vector
 	CHPID = fork();
 	if(CHPID == 0){
 		execv(argv[0], argv);
