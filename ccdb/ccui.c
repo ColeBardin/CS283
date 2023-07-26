@@ -139,7 +139,7 @@ void add(){
 	char *argv[8];
 
 	// Get input parameters from user
-	printf("Enter ID number for new item or use -a flag to automatically assign ID:\n");
+	printf("Enter ID number for new item or \'-a\' to automatically assign ID:\n");
 	ret = scanf("%s", id);
 	if(ret != 1){
 		printf("Failed to read input\n");
@@ -176,6 +176,7 @@ void add(){
 		return;
 	}
 
+	printf("Adding new item to ccdb...\n");
 	// Build argv and run it
 	argv[0] = "./ccadd";
 	argv[1] = id;
@@ -200,6 +201,7 @@ void delete(){
 		printf("Invalid input\n");
 		return;
 	}
+	printf("Attempting to delete item %s...\n", id);
 	// Build argv and run it
 	argv[0] = "./ccdel";
 	argv[1] = id;
@@ -238,6 +240,7 @@ void item(){
 		printf("Invalid input\n");
 		return;
 	}
+	printf("Attempting to fetch details about item %s...\n", id);
 	// Build argv and run it
 	argv[0] = "./ccitem";
 	argv[1] = id;
@@ -248,6 +251,7 @@ void item(){
 void list(){
 	char *argv[2];
 
+	printf("Current items in ccdb:\n");
 	// Build argv and run it
 	argv[0] = "./cclist";
 	argv[1] = NULL;
@@ -266,6 +270,7 @@ void match(){
 		printf("Invalid input\n");
 		return;
 	}
+	printf("Items found that match keyword \'%s\':\n", word);
 	// Build argv and run it
 	argv[0] = "./ccmatch";
 	argv[1] = word;
@@ -280,12 +285,20 @@ void year(){
 	char *argv[4];
 
 	// Get start and stop year from user
-	printf("Enter start and stop years separated by a space:\n");
-	ret = scanf("%s %s", start, stop);
-	if(ret != 2){
+	printf("Enter Start year (inclusive):\n");
+	ret = scanf("%s", start);
+	if(ret != 1){
 		printf("Invalid input\n");
 		return;
 	}
+	printf("Enter Stop year (inclusive):\n");
+	ret = scanf("%s", stop);
+	if(ret != 1){
+		printf("Invalid input\n");
+		return;
+	}
+	
+	printf("Items found between years %s and %s:\n", start, stop);
 	// Build argv and run it
 	argv[0] = "./ccyear";
 	argv[1] = start;
