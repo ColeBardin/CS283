@@ -139,13 +139,43 @@ void add(){
 	char *argv[8];
 
 	// Get input parameters from user
-	printf("Enter new item details in following format:\n");
-	printf("[id | -a] name maker cpu year desc\n");
-	ret = scanf("%s %s %s %s %s %s", id, name, maker, cpu, year, desc);
-	if(ret != 6){
-		printf("Invalid input\n");
+	printf("Enter ID number for new item or use -a flag to automatically assign ID:\n");
+	ret = scanf("%s", id);
+	if(ret != 1){
+		printf("Failed to read input\n");
 		return;
 	}
+	printf("Enter item Name:\n");
+	ret = scanf("%s", name);
+	if(ret != 1){
+		printf("Failed to read input:\n");
+		return;
+	}
+	printf("Enter item Maker:\n");
+	ret = scanf("%s", maker);
+	if(ret != 1){
+		printf("Failed to read input\n");
+		return;
+	}
+	printf("Enter item CPU:\n");
+	ret = scanf("%s", cpu);
+	if(ret != 1){
+		printf("Failed to read input\n");
+		return;
+	}
+	printf("Enter item Year:\n");
+	ret = scanf("%s", year);
+	if(ret != 1){
+		printf("Failed to read input\n");
+		return;
+	}
+	printf("Enter item Description:\n");
+	ret = scanf("%s", desc);
+	if(ret != 1){
+		printf("Failed to read input\n");
+		return;
+	}
+
 	// Build argv and run it
 	argv[0] = "./ccadd";
 	argv[1] = id;
