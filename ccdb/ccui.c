@@ -16,30 +16,10 @@ void printMenu();
  */
 int getResponse(char *buf);
 
-/**
- Runs the argument vector in a child process and waits for it to complete
- @param argv argument vector to run, appended with NULL to mark end
- */
 void run(char **argv);
-
-/**
- Gets users input to add a new item, runs ccadd program
- */
 void add();
-
-/**
- Gets ID from user and runs ccdel program to delete the item
- */
 void delete();
-
-/**
- Gets ID from user and runs ccedit program to edit the item
- */
 void edit();
-
-/** 
- gets ID from user and runs ccitem program to display the item
- */
 void item();
 void list();
 void match();
@@ -110,6 +90,7 @@ int getResponse(char *buf){
 		default:
 			printf("Unrecognized input. Try again\n");
 			return getResponse(buf);
+			break;
 	}
 	return 0;
 }
