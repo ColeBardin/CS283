@@ -57,7 +57,7 @@ void match();
 void year();
 
 int main(int argc, char **argv){
-	char responseBuf[16];
+	char responseBuf[32];
 	int ret;	
 
 	ret = 0;
