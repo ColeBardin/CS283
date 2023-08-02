@@ -7,7 +7,6 @@
 #define MAXTOKS 128
 #define BUFSIZE 256
 
-int procCmd();
 int tokenize(char *s, char *toks[], int maxtoks);
 int exitCmd(char *argv[]);
 int cdCmd(char *argv[]);
@@ -62,32 +61,6 @@ int main(void){
 	}
 	
 	exit(0);	
-}
-
-int procCmd(){
-	int cmd;
-	int n;
-	char *toks[MAXTOKS];
-	pid_t CHPID;
-	int state;
-
-	n = tokenize(line, toks, MAXTOKS);	
-	if(n == 0) return -1;
-
-	for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
-	if(cmd < Ncmds){
-		cmds[cmd].f(toks);
-		return cmd;
-	}
-
-	// Create child process and run argument vector
-	CHPID = fork();
-	if(CHPID == 0){
-		execvp(toks[0], toks);
-	}else{
-		wait(&state);
-	}
-	return -2;
 }
 
 int tokenize(char *s, char *toks[], int maxtoks){
