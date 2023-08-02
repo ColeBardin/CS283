@@ -7,7 +7,7 @@
 #define MAXTOKS 128
 #define BUFSIZE 256
 
-int procCmd(char *line);
+int procCmd();
 int tokenize(char *s, char *toks[], int maxtoks);
 int exitCmd(char *argv[]);
 int cdCmd(char *argv[]);
@@ -20,50 +20,93 @@ Command cmds[] = {
 };
 const int Ncmds = sizeof(cmds) / sizeof(Command);
 char line[BUFSIZE];
-char *p;
 
 int main(void){
-	int ret;
+	char *curDir;
+	int cmd;
+	int n;
+	char *toks[MAXTOKS];
+	pid_t CHPID;
+	int state;
 
 	while(1){
-		printf("C$ ");
-		if(fgets(line, BUFSIZE, stdin) == NULL) exit(0);
+		getcwd(line, BUFSIZE);
+		curDir = strrchr(line, '/');
+		curDir++;
+		
+		printf("%s C$ ", curDir);
+		if(fgets(line, BUFSIZE, stdin) == NULL){
+			exit(0);
+		}
+		
+		n = tokenize(line, toks, MAXTOKS);	
+		if(n == 0) return -1;
 
-		ret = procCmd(line);	
-		if(ret == 0) exit(0);
+		for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
+		if(cmd < Ncmds){
+			cmds[cmd].f(toks);
+			if(cmd == 0){
+				exit(0);
+			}else{
+				continue;
+			}
+		}
+
+		// Create child process and run argument vector
+		CHPID = fork();
+		if(CHPID == 0){
+			execvp(toks[0], toks);
+		}else{
+			wait(&state);
+		}
 	}
 	
 	exit(0);	
 }
-int procCmd(char *line){
+
+int procCmd(){
 	int cmd;
 	int n;
 	char *toks[MAXTOKS];
+	pid_t CHPID;
+	int state;
 
 	n = tokenize(line, toks, MAXTOKS);	
 	if(n == 0) return -1;
 
-	for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(cmds[cmd].name)); cmd++);
+	for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
 	if(cmd < Ncmds){
 		cmds[cmd].f(toks);
 		return cmd;
 	}
-	execvp(toks[0], toks);
+
+	// Create child process and run argument vector
+	CHPID = fork();
+	if(CHPID == 0){
+		execvp(toks[0], toks);
+	}else{
+		wait(&state);
+	}
 	return -2;
 }
 
 int tokenize(char *s, char *toks[], int maxtoks){
 	//for(toks[0] = strtoks(s, "\t\n"), i=0; toks[i] != NULL; toks[i] = strtok(NULL, "\t\n"), i++){
 	int i;
+	char *p;
 
 	i = 0;
-	toks[i] = strtok(s, " \t");
+	toks[i] = strtok(s, " ");
 	while(toks[i] != NULL){
+		p = strchr(toks[i], '\n');
+		if(p != NULL){
+			*p = '\0';
+		}
 		i++;
 		if(i >= maxtoks - 1){
 			toks[i] = NULL;
 		}else{
-			toks[i] = strtok(NULL, " \t");
+			toks[i] = strtok(NULL, " ");
 		}
 	}
 	return i;
@@ -75,6 +118,7 @@ int exitCmd(char *argv[]){
 }
 
 int cdCmd(char *argv[]){
+	char *p;
 	if(argv[1] == NULL || strlen(argv[1]) == 0){
 		p = getenv("HOME");
 	}else{
