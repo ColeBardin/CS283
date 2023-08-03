@@ -46,15 +46,17 @@ int main(void){
 			cmds[cmd].f(toks);
 			if(cmd == 0){
 				exit(0);
-			}else{
-				continue;
 			}
+			continue;
 		}
 
 		// Create child process and run argument vector
 		CHPID = fork();
 		if(CHPID == 0){
-			execvp(toks[0], toks);
+			if(execvp(toks[0], toks) == -1){
+				printf("Command not found: %s\n", toks[0]);
+				exit(1);
+			}
 		}else{
 			wait(&state);
 		}
