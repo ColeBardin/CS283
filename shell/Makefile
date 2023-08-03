@@ -1,7 +1,7 @@
-all: csh
+all: dsh
 
-csh: csh.c
-	cc -o csh csh.c -Wall -Werror -Wpedantic
+csh: dsh.c
+	cc -o dsh dsh.c -Wall -Werror -Wpedantic
 
 clean:
-	rm *.o csh
+	rm *.o dsh

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "csh.h"
+#include "dsh.h"
 
 #define MAXTOKS 128
 #define BUFSIZE 256
@@ -31,9 +31,11 @@ int main(void){
 	while(1){
 		getcwd(line, BUFSIZE);
 		curDir = strrchr(line, '/');
-		curDir++;
+		if(strlen(curDir) != 1){
+			curDir++;
+		}
 		
-		printf("%s C$ ", curDir);
+		printf("%s D$ ", curDir);
 		if(fgets(line, BUFSIZE, stdin) == NULL){
 			exit(0);
 		}
@@ -66,7 +68,6 @@ int main(void){
 }
 
 int tokenize(char *s, char *toks[], int maxtoks){
-	//for(toks[0] = strtoks(s, "\t\n"), i=0; toks[i] != NULL; toks[i] = strtok(NULL, "\t\n"), i++){
 	int i;
 	char *p;
 
