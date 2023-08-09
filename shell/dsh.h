@@ -4,7 +4,7 @@
 typedef struct Command Command;
 struct Command {
 	char *name;
-	int (*f)(char *argv[]);
+	int (*f)(int argc, char *argv[]);
 };
 
 #endif

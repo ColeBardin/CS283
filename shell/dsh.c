@@ -6,7 +6,7 @@
 #include "dsh.h"
 
 #define MAXTOKS 128
-#define BUFSIZE 256
+#define BUFSIZE 1024
 
 /**
  Tokenizes a string by whitespace.
@@ -19,24 +19,35 @@ int tokenize(char *s, char *toks[], int maxtoks);
 
 /**
  Function body for exit builtin command.
+ @param argc Number of arguments
  @param argv Argument vector
  @retun 0
  */
-int exitCmd(char *argv[]);
+int exitCmd(int argc, char *argv[]);
 
 /**
  Funciton body for cd builtin command.
+ @param argc Number of arguments
  @param argv Argument vector
  @return 0
  */
-int cdCmd(char *argv[]);
+int cdCmd(int argc, char *argv[]);
 
 /**
  Function body for pwd builtin command.
+ @param argc Number of arguments
  @param argv Argument vector
  @return 0
  */
-int pwdCmd(char *argv[]);
+int pwdCmd(int argc, char *argv[]);
+
+/**
+ Runs arbitrary command that is not a built in
+ @param argc Number of arguments
+ @param argv Argument vector
+ @return 0
+ */
+int runCmd(int argc, char *argv[]);
 
 Command cmds[] = {
 	{"exit", &exitCmd},
@@ -49,10 +60,8 @@ char line[BUFSIZE];
 int main(void){
 	int cmd;
 	int n;
-	int state;
 	char *toks[MAXTOKS];
 	char *curDir;
-	pid_t CHPID;
 
 	while(1){
 		// Build basic prompt
@@ -63,7 +72,7 @@ int main(void){
 		}
 		printf("%s D$ ", curDir);
 
-		// Read and tokenie user input
+		// Read user's input
 		if(fgets(line, BUFSIZE, stdin) == NULL){
 			exit(0);
 		}
@@ -74,7 +83,7 @@ int main(void){
 		// Search through builtins and execute if found
 		for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
 		if(cmd < Ncmds){
-			cmds[cmd].f(toks);
+			cmds[cmd].f(n, toks);
 			if(cmd == 0){
 				exit(0);
 			}
@@ -82,15 +91,7 @@ int main(void){
 		}
 
 		// If not a builtin, fork and exec arbitrary command
-		CHPID = fork();
-		if(CHPID == 0){
-			if(execvp(toks[0], toks) == -1){
-				printf("Command not found: %s\n", toks[0]);
-				exit(1);
-			}
-		}else{
-			wait(&state);
-		}
+		runCmd(n, toks);
 	}
 	
 	exit(0);	
@@ -108,6 +109,30 @@ int tokenize(char *s, char *toks[], int maxtoks){
 		if(p != NULL){
 			*p = '\0';
 		}
+
+		// Parse token for redirect input command 
+		p = strchr(toks[i], '<');
+		if(p != NULL){
+			*p = '\0';
+			p++;
+			// Keep chars before < as token
+			if(strlen(toks[i]) != 0){
+				if(++i >= maxtoks - 1){
+					toks[i] = NULL;
+					return i;
+				}
+			}
+			toks[i] = "<";
+			// Add chars after < as token
+			if(strlen(p) != 0){
+				if(++i >= maxtoks - 1){
+					toks[i] = NULL;
+					return i;
+				}
+				toks[i] = p;
+			}
+		}
+		
 		i++;
 		if(i >= maxtoks - 1){
 			toks[i] = NULL;
@@ -118,14 +143,14 @@ int tokenize(char *s, char *toks[], int maxtoks){
 	return i;
 }
 
-int exitCmd(char *argv[]){
+int exitCmd(int argc, char *argv[]){
 	printf("[Exiting session]\n");
 	return 0;
 }
 
-int cdCmd(char *argv[]){
+int cdCmd(int argc, char *argv[]){
 	char *p;
-	if(argv[1] == NULL || argv[1][0] == '\0'){
+	if(argc == 1 || argv[1][0] == '\0'){
 		// Empty argument: go to home directory
 		p = getenv("HOME");
 	}else{
@@ -143,9 +168,25 @@ int cdCmd(char *argv[]){
 	return 0;
 }
 
-int pwdCmd(char *argv[]){
+int pwdCmd(int argc, char *argv[]){
 	getcwd(line, BUFSIZE);
 	printf("%s\n", line);
+	return 0;
+}
+
+int runCmd(int argc, char *argv[]){
+	pid_t CHPID;
+	int state;
+	int n;
+
+	CHPID = fork();
+	if(CHPID == 0){
+		execvp(argv[0], argv);
+		printf("Command not found: %s\n", argv[0]);
+		exit(1);
+	}else{
+		wait(&state);
+	}
 	return 0;
 }
 
