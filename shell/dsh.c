@@ -52,7 +52,8 @@ int runCmd(int argc, char *argv[]);
 Command cmds[] = {
 	{"exit", &exitCmd},
 	{"cd", &cdCmd},
-	{"pwd", &pwdCmd}
+	{"pwd", &pwdCmd},
+	{"", &runCmd}
 };
 const int Ncmds = sizeof(cmds) / sizeof(Command);
 char line[BUFSIZE];
@@ -80,18 +81,12 @@ int main(void){
 		if(line[0] == '\n') continue;
 		n = tokenize(line, toks, MAXTOKS);	
 
-		// Search through builtins and execute if found
-		for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
-		if(cmd < Ncmds){
-			cmds[cmd].f(n, toks);
-			if(cmd == 0){
-				exit(0);
-			}
-			continue;
+		// Search through builtins or execute arbitrary command
+		for(cmd = 0; cmd < Ncmds - 1 && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
+		cmds[cmd].f(n, toks);
+		if(cmd == 0){
+			exit(0);
 		}
-
-		// If not a builtin, fork and exec arbitrary command
-		runCmd(n, toks);
 	}
 	
 	exit(0);	
