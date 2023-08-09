@@ -34,14 +34,6 @@ int exitCmd(int argc, char *argv[]);
 int cdCmd(int argc, char *argv[]);
 
 /**
- Function body for pwd builtin command.
- @param argc Number of arguments
- @param argv Argument vector
- @return 0
- */
-int pwdCmd(int argc, char *argv[]);
-
-/**
  Runs arbitrary command that is not a built in
  @param argc Number of arguments
  @param argv Argument vector
@@ -52,7 +44,6 @@ int runCmd(int argc, char *argv[]);
 Command cmds[] = {
 	{"exit", &exitCmd},
 	{"cd", &cdCmd},
-	{"pwd", &pwdCmd},
 	{"", &runCmd}
 };
 const int Ncmds = sizeof(cmds) / sizeof(Command);
@@ -160,12 +151,6 @@ int cdCmd(int argc, char *argv[]){
 	if(chdir(p) < 0){
 		perror(line);
 	}
-	return 0;
-}
-
-int pwdCmd(int argc, char *argv[]){
-	getcwd(line, BUFSIZE);
-	printf("%s\n", line);
 	return 0;
 }
 
