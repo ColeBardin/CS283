@@ -89,29 +89,6 @@ int tokenize(char *s, char *toks[], int maxtoks){
 			*p = '\0';
 		}
 
-		// Parse token for redirect input command 
-		p = strchr(toks[i], '<');
-		if(p != NULL){
-			*p = '\0';
-			p++;
-			// Keep chars before < as token
-			if(strlen(toks[i]) != 0){
-				if(++i >= maxtoks - 1){
-					toks[i] = NULL;
-					return i;
-				}
-			}
-			toks[i] = "<";
-			// Add chars after < as token
-			if(strlen(p) != 0){
-				if(++i >= maxtoks - 1){
-					toks[i] = NULL;
-					return i;
-				}
-				toks[i] = p;
-			}
-		}
-		
 		i++;
 		if(i >= maxtoks - 1){
 			toks[i] = NULL;
