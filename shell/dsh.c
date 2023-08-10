@@ -8,6 +8,9 @@
 #define MAXTOKS 128
 #define BUFSIZE 1024
 
+int handleRedir(char *line);
+int handleCmd(char *line);
+
 /**
  Tokenizes a string by whitespace.
  @param s String to tokenize
@@ -16,8 +19,6 @@
  @return number of tokens found
  */
 int tokenize(char *s, char *toks[], int maxtoks);
-
-int handleCmd(char *line);
 
 /**
  Function body for exit builtin command.
@@ -70,10 +71,30 @@ int main(void){
 		// Skip empty lines
 		if(line[0] == '\n') continue;
 	
-		if(handleCmd(line) == 0) break;
+		if(handleRedir(line) == 0) break;
 	}
 	
 	exit(0);	
+}
+
+int handleRedir(char *line){
+		
+	return handleCmd(line);	
+}
+
+int handleCmd(char *line){
+	int cmd;
+	int n;
+	char *toks[MAXTOKS];
+	
+	// Tokenize command
+	n = tokenize(line, toks, MAXTOKS);	
+
+	// Search through builtins or execute arbitrary command
+	for(cmd = 0; cmd < Ncmds - 1 && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
+	cmds[cmd].f(n, toks);
+
+	return cmd;
 }
 
 int tokenize(char *s, char *toks[], int maxtoks){
@@ -97,21 +118,6 @@ int tokenize(char *s, char *toks[], int maxtoks){
 		}
 	}
 	return i;
-}
-
-int handleCmd(char *line){
-	int cmd;
-	int n;
-	char *toks[MAXTOKS];
-	
-	// Tokenize command
-	n = tokenize(line, toks, MAXTOKS);	
-
-	// Search through builtins or execute arbitrary command
-	for(cmd = 0; cmd < Ncmds - 1 && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
-	cmds[cmd].f(n, toks);
-
-	return cmd;
 }
 
 int exitCmd(int argc, char *argv[]){
