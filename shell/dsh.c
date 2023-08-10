@@ -17,6 +17,8 @@
  */
 int tokenize(char *s, char *toks[], int maxtoks);
 
+int handleCmd(char *line);
+
 /**
  Function body for exit builtin command.
  @param argc Number of arguments
@@ -50,9 +52,6 @@ const int Ncmds = sizeof(cmds) / sizeof(Command);
 char line[BUFSIZE];
 
 int main(void){
-	int cmd;
-	int n;
-	char *toks[MAXTOKS];
 	char *curDir;
 
 	while(1){
@@ -70,14 +69,8 @@ int main(void){
 		}
 		// Skip empty lines
 		if(line[0] == '\n') continue;
-		n = tokenize(line, toks, MAXTOKS);	
-
-		// Search through builtins or execute arbitrary command
-		for(cmd = 0; cmd < Ncmds - 1 && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
-		cmds[cmd].f(n, toks);
-		if(cmd == 0){
-			exit(0);
-		}
+	
+		if(handleCmd(line) == 0) break;
 	}
 	
 	exit(0);	
@@ -127,6 +120,21 @@ int tokenize(char *s, char *toks[], int maxtoks){
 		}
 	}
 	return i;
+}
+
+int handleCmd(char *line){
+	int cmd;
+	int n;
+	char *toks[MAXTOKS];
+	
+	// Tokenize command
+	n = tokenize(line, toks, MAXTOKS);	
+
+	// Search through builtins or execute arbitrary command
+	for(cmd = 0; cmd < Ncmds - 1 && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
+	cmds[cmd].f(n, toks);
+
+	return cmd;
 }
 
 int exitCmd(int argc, char *argv[]){
