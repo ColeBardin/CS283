@@ -145,7 +145,7 @@ int handleRedir(char *line){
 					truncate = 0;
 					continue;
 				}else{
-					printf("Error: More than 2 consecutive > characters\n");
+					fprintf(stderr, "Error: More than 2 consecutive > characters\n");
 					return -1;
 				}
 			}
@@ -176,6 +176,17 @@ int handleRedir(char *line){
 			perror("");
 			return -1;
 		}
+	}
+	
+	p = strchr(line, '>');
+	if(p != NULL){
+		fprintf(stderr, "Error: Too many output redirections\n");
+		return -1;
+	}
+	p = strchr(line, '<');
+	if(p != NULL){
+		fprintf(stderr, "Error: Too many input redirections\n");
+		return -1;
 	}
 
 	return handleCmd(line);	
