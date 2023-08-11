@@ -95,7 +95,6 @@ int main(void){
 }
 
 int handleRedir(char *line){
-	int ret;
 	char *in, *out;
 	char *p;
 	char buf[BUFSIZE];
@@ -115,8 +114,7 @@ int handleRedir(char *line){
 		len = strlen(in);
 		// Find end of argument for redir
 		for(i = 0; i < len; i++){
-			if(in[i] == ' ' || in[i] == '\t' || in[i] == '>') break;
-			if(in[i] <= ' ' || in[i] > '~') break;
+			if(in[i] == '\t' || in[i] == '>' || in[i] <= ' ' || in[i] > '~') break;
 		}
 		// Copy filename into buffer
 		memcpy(buf, in, i);
@@ -137,23 +135,27 @@ int handleRedir(char *line){
 	out = strchr(line, '>');
 	if(out != NULL){
 		truncate = 1; 
-		p = out;
-		out = strchr(line, '>');
-		if(out != NULL){
-			// Second > char, appending type
-			truncate = 0;
-		}else{
-			out = p;
-		}		
-		out++;
+		p = out++;
 
-		// Set in ptr to first non whitespace character after <
-		while(*out == ' ' || *out == '\t') out++;
+		// Set in ptr to first non whitespace character after >, account for trunc
+		len = strlen(out);
+		for(i = 0; i < len; i++){
+			if(out[i] == '>'){
+				if(truncate == 1){
+					truncate = 0;
+					continue;
+				}else{
+					printf("Error: More than 2 consecutive > characters\n");
+					return -1;
+				}
+			}
+			if(out[i] != ' ' && out[i] != '\t') break;
+		}
+		out += i;
 		len = strlen(out);
 		// Find end of argument for redir
 		for(i = 0; i < len; i++){
-			if(out[i] == ' ' || out[i] == '\t' || out[i] == '<') break;
-			if(out[i] <= ' ' || out[i] > '~') break;
+			if(out[i] == '\t' || out[i] == '<' || out[i] <= ' ' || out[i] > '~') break;
 		}
 		// Copy filename into buffer
 		memcpy(buf, out, i);
@@ -175,10 +177,8 @@ int handleRedir(char *line){
 			return -1;
 		}
 	}
-	// cmd<f1>f2
-	ret = handleCmd(line);	
-	
-	return ret;
+
+	return handleCmd(line);	
 }
 
 int handleCmd(char *line){
