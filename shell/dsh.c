@@ -120,9 +120,8 @@ int handleRedir(char *line){
 		memcpy(buf, in, i);
 		buf[i] = '\0';
 		// Remove redir from line
-		for(j = 0; j < in - p + i; j++){
-			p[j] = ' ';
-		}
+		memset(p, ' ', in - p + i);
+
 		fdi = open(buf, O_RDONLY);
 		if(fdi == -1){
 			fprintf(stderr, "Error opening '%s': ", buf);
@@ -161,14 +160,12 @@ int handleRedir(char *line){
 		memcpy(buf, out, i);
 		buf[i] = '\0';
 		// Remove redir from line
-		for(j = 0; j < out - p + i; j++){
-			p[j] = ' ';
-		}
+		memset(p, ' ', out - p + i);
 	
-		if(truncate == 0){
-			flag = O_WRONLY | O_CREAT | O_APPEND;
-		}else{
+		if(truncate){
 			flag = O_WRONLY | O_CREAT | O_TRUNC;
+		}else{
+			flag = O_WRONLY | O_CREAT | O_APPEND;
 		}
 		fdo = open(buf, flag, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if(fdo == -1){
