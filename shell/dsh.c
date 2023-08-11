@@ -212,13 +212,7 @@ int tokenize(char *s, char *toks[], int maxtoks){
 	i = 0;
 	// Tokenize by whitespace
 	toks[i] = strtok(s, " \t");
-	while(toks[i] != NULL){
-		p = strchr(toks[i], '\n');
-		if(p != NULL){
-			*p = '\0';
-		}
-
-		i++;
+	while(toks[i++] != NULL){
 		if(i >= maxtoks - 1){
 			toks[i] = NULL;
 		}else{
