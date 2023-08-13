@@ -135,8 +135,7 @@ int handleRedir(char *line){
 	if(out != NULL){
 		truncate = 1; 
 		p = out++;
-
-		// Set in ptr to first non whitespace character after >, account for trunc
+		// Set in ptr to first non whitespace character after >, account for appending case 
 		len = strlen(out);
 		for(i = 0; i < len; i++){
 			if(out[i] == '>'){
@@ -229,15 +228,10 @@ int exitCmd(int argc, char *argv[]){
 
 int cdCmd(int argc, char *argv[]){
 	char *p;
-	if(argc == 1 || argv[1][0] == '\0'){
+	if(argc == 1 || argv[1] == NULL || argv[1][0] == '\0'){
 		// Empty argument: go to home directory
 		p = getenv("HOME");
 	}else{
-		// Remove newline from arg
-		p = strchr(argv[1], '\n');
-		if(p != NULL){
-			*p = '\0';
-		}
 		p = argv[1];
 	}
 	// Change dir
@@ -254,12 +248,16 @@ int runCmd(int argc, char *argv[]){
 
 	CHPID = fork();
 	if(CHPID == 0){
-		if(fdi != -1) dup2(fdi, 0);
-		if(fdo != -1) dup2(fdo, 1);
-		if(fdo != -1) dup2(fdo, 2);
+		if(fdi != -1){
+			dup2(fdi, 0);
+			close(fdi);
+		}
+		if(fdo != -1){
+			dup2(fdo, 1);
+			dup2(fdo, 2);
+			close(fdo);
+		}
 
-		close(fdi);
-		close(fdo);
 		execvp(argv[0], argv);
 		printf("Command not found: %s\n", argv[0]);
 		exit(1);
