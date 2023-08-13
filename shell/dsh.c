@@ -14,6 +14,14 @@ typedef struct {
 	int (*f)(int argc, char *argv[]);
 } Command;
 
+/**
+ Handles truncating and appending output and input file redireciton.
+ Parses nonwhitespace after input or output redirection characters.
+ Opens the desired files and sets the global file descriptor values for runCmd.
+ Then calls handleCmd.
+ @param line current line to be processed
+ @return 
+ */
 int handleRedir(char *line);
 
 /**
@@ -66,8 +74,7 @@ int fdi, fdo;
 
 int main(void){
 	char line[BUFSIZE];
-	char *curDir;
-	char *p;
+	char *curDir, *p;
 	int i, len;
 
 	while(1){
@@ -192,7 +199,10 @@ int handleRedir(char *line){
 		return -1;
 	}
 
-	return handleCmd(line);	
+	i = handleCmd(line);	
+	close(fdi);
+	close(fdo);
+	return i;
 }
 
 int handleCmd(char *line){
