@@ -5,12 +5,23 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <errno.h>
-#include "dsh.h"
 
 #define MAXTOKS 128
 #define BUFSIZE 1024
 
+typedef struct {
+	char *name;
+	int (*f)(int argc, char *argv[]);
+} Command;
+
 int handleRedir(char *line);
+
+/**
+ Tokenizes line by whitespace and tries to call builtin command. 
+ If command is not recognized, the argument vector will be run.
+ @param line current line to be processed
+ @return Index of command run
+ */
 int handleCmd(char *line);
 
 /**
@@ -51,11 +62,10 @@ Command cmds[] = {
 	{"cd", &cdCmd},
 	{"", &runCmd}
 };
-const int Ncmds = sizeof(cmds) / sizeof(Command);
-char line[BUFSIZE];
 int fdi, fdo;
 
 int main(void){
+	char line[BUFSIZE];
 	char *curDir;
 	char *p;
 	int i, len;
@@ -95,32 +105,29 @@ int main(void){
 }
 
 int handleRedir(char *line){
-	char *in, *out;
-	char *p;
+	char *loc, *p;
 	char buf[BUFSIZE];
-	int i, j, len;
-	int truncate;
-	int flag;
+	int i, j, len, truncate, flag;
 
 	fdi = -1;
 	fdo = -1;	
 
 	// Search for input redir
-	in = strchr(line, '<');
-	if(in != NULL){
-		p = in++;
-		// Set in ptr to first non whitespace character after <
-		while(*in == ' ' || *in == '\t') in++;
-		len = strlen(in);
+	loc = strchr(line, '<');
+	if(loc != NULL){
+		p = loc++;
+		// Set loc ptr to first non whitespace character after <
+		while(*loc == ' ' || *loc == '\t') loc++;
+		len = strlen(loc);
 		// Find end of argument for redir
 		for(i = 0; i < len; i++){
-			if(in[i] == '\t' || in[i] == '>' || in[i] <= ' ' || in[i] > '~') break;
+			if(loc[i] == '\t' || loc[i] == '>' || loc[i] <= ' ' || loc[i] > '~') break;
 		}
 		// Copy filename into buffer
-		memcpy(buf, in, i);
+		memcpy(buf, loc, i);
 		buf[i] = '\0';
 		// Remove redir from line
-		memset(p, ' ', in - p + i);
+		memset(p, ' ', loc - p + i);
 
 		fdi = open(buf, O_RDONLY);
 		if(fdi == -1){
@@ -131,14 +138,14 @@ int handleRedir(char *line){
 	}
 
 	// Search for output redir
-	out = strchr(line, '>');
-	if(out != NULL){
+	loc = strchr(line, '>');
+	if(loc != NULL){
 		truncate = 1; 
-		p = out++;
-		// Set in ptr to first non whitespace character after >, account for appending case 
-		len = strlen(out);
+		p = loc++;
+		// Set loc ptr to first non whitespace character after >, account for appending case 
+		len = strlen(loc);
 		for(i = 0; i < len; i++){
-			if(out[i] == '>'){
+			if(loc[i] == '>'){
 				if(truncate == 1){
 					truncate = 0;
 					continue;
@@ -147,19 +154,19 @@ int handleRedir(char *line){
 					return -1;
 				}
 			}
-			if(out[i] != ' ' && out[i] != '\t') break;
+			if(loc[i] != ' ' && loc[i] != '\t') break;
 		}
-		out += i;
-		len = strlen(out);
+		loc += i;
+		len = strlen(loc);
 		// Find end of argument for redir
 		for(i = 0; i < len; i++){
-			if(out[i] == '\t' || out[i] == '<' || out[i] <= ' ' || out[i] > '~') break;
+			if(loc[i] == '\t' || loc[i] == '<' || loc[i] <= ' ' || loc[i] > '~') break;
 		}
 		// Copy filename into buffer
-		memcpy(buf, out, i);
+		memcpy(buf, loc, i);
 		buf[i] = '\0';
 		// Remove redir from line
-		memset(p, ' ', out - p + i);
+		memset(p, ' ', loc - p + i);
 	
 		if(truncate){
 			flag = O_WRONLY | O_CREAT | O_TRUNC;
@@ -189,8 +196,8 @@ int handleRedir(char *line){
 }
 
 int handleCmd(char *line){
-	int cmd;
-	int n;
+	static const int Ncmds = sizeof(cmds) / sizeof(Command);
+	int cmd, n;
 	char *toks[MAXTOKS];
 	
 	// Tokenize command
@@ -228,6 +235,7 @@ int exitCmd(int argc, char *argv[]){
 
 int cdCmd(int argc, char *argv[]){
 	char *p;
+
 	if(argc == 1 || argv[1] == NULL || argv[1][0] == '\0'){
 		// Empty argument: go to home directory
 		p = getenv("HOME");
@@ -236,7 +244,7 @@ int cdCmd(int argc, char *argv[]){
 	}
 	// Change dir
 	if(chdir(p) < 0){
-		perror(line);
+		perror(argv[0]);
 	}
 	return 0;
 }
@@ -244,7 +252,6 @@ int cdCmd(int argc, char *argv[]){
 int runCmd(int argc, char *argv[]){
 	pid_t CHPID;
 	int state;
-	int n;
 
 	CHPID = fork();
 	if(CHPID == 0){
