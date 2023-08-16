@@ -168,7 +168,7 @@ int handleRedir(char *line, int fdi, int fdo){
 		// Remove redir from line
 		memset(p, ' ', loc - p + i);
 
-		if(fdi == 1){
+		if(fdi == -1){
 			fdi = open(buf, O_RDONLY);
 			if(fdi == -1){
 				fprintf(stderr, "Error opening '%s': ", buf);
