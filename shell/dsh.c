@@ -168,11 +168,13 @@ int handleRedir(char *line, int fdi, int fdo){
 		// Remove redir from line
 		memset(p, ' ', loc - p + i);
 
-		fdi = open(buf, O_RDONLY);
-		if(fdi == -1){
-			fprintf(stderr, "Error opening '%s': ", buf);
-			perror("");
-			return -1;
+		if(fdi == 1){
+			fdi = open(buf, O_RDONLY);
+			if(fdi == -1){
+				fprintf(stderr, "Error opening '%s': ", buf);
+				perror("");
+				return -1;
+			}
 		}
 	}
 
@@ -212,11 +214,13 @@ int handleRedir(char *line, int fdi, int fdo){
 		}else{
 			flag = O_WRONLY | O_CREAT | O_APPEND;
 		}
-		fdo = open(buf, flag, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if(fdo == -1){
-			fprintf(stderr, "Error opening '%s': ", buf);
-			perror("");
-			return -1;
+			fdo = open(buf, flag, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			if(fdo == -1){
+				fprintf(stderr, "Error opening '%s': ", buf);
+				perror("");
+				return -1;
+			}
 		}
 	}
 	
