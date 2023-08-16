@@ -14,6 +14,12 @@ typedef struct {
 	int (*f)(int argc, char *argv[]);
 } Command;
 
+/**
+ Handles opening and closing pipes.
+ Calls handle redir on substrings between pipes.
+ @param line current line to be processed
+ @return Index of command run, or 0 if exit is called
+ */
 int handlePipes(char *line);
 
 /**
@@ -22,7 +28,7 @@ int handlePipes(char *line);
  Opens the desired files and sets the global file descriptor values for runCmd.
  Then calls handleCmd.
  @param line current line to be processed
- @return 
+ @return Index of command run
  */
 int handleRedir(char *line, int fdi, int fdo);
 
@@ -112,33 +118,36 @@ int main(void){
 }
 
 int handlePipes(char *line){
-	int ret, n, i, nPipes;
+	int ret, nToks, i, nPipes;
 	char *toks[MAXTOKS];	
+	char *p;
 	int pipes[MAXTOKS][2];
 	int fdi, fdo;
 
 	fdi = -1;
 	fdo = -1;
 
-	n = tokenize(line, toks, MAXTOKS, "|");
-	nPipes = n -2;
+	nToks = tokenize(line, toks, MAXTOKS, "|");
+	nPipes = nToks - 2;
 	if(nPipes < 0) nPipes = 0;
 
+	// Open pipes
 	for(i = 0; i < nPipes; i++){
 		pipe(pipes[i]);
 	}
 		
-	for(i = 0; i < n - 1; i++){
+	for(i = 0; i < nToks - 1; i++){
 		if(i == 0) fdi = -1;
 		else fdi = pipes[i-1][0]; // pipes[i-1] out
 
-		if(i == n - 2) fdo = -1;
+		if(i == nToks - 2) fdo = -1;
 		else fdo = pipes[i][1]; // pipes[i] in
-	
+
 		ret = handleRedir(toks[i], fdi, fdo);
 		if(ret == 0) break;
 	}
 
+	// Close all pipes
 	for(i = 0; i < nPipes; i++){
 		close(pipes[i][0]);
 		close(pipes[i][1]);
@@ -150,6 +159,17 @@ int handleRedir(char *line, int fdi, int fdo){
 	char *loc, *p;
 	char buf[BUFSIZE];
 	int i, j, len, truncate, flag;
+
+	// Ingore leading whitespace from string
+	len = strlen(line);
+	for(i = 0; i < len; i++){
+		if(line[i] != ' ' && line[i] != '\t'){
+			p = &line[i];
+			break;	
+		}
+	}	
+	// Skip empty lines
+	if(i == len) return -1;
 
 	// Search for input redir
 	loc = strchr(line, '<');
@@ -251,7 +271,7 @@ int handleCmd(char *line, int fdi, int fdo){
 	if(n == 0) return -1;
 
 	// Search through builtins or execute arbitrary command
-	for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
+	for(cmd = 0; cmd < Ncmds && strcmp(toks[0], cmds[cmd].name); cmd++);
 	if(cmd != Ncmds) cmds[cmd].f(n, toks);
 	else runCmd(n, toks, fdi, fdo);
 
