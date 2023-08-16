@@ -14,6 +14,8 @@ typedef struct {
 	int (*f)(int argc, char *argv[]);
 } Command;
 
+int handlePipes(char *line);
+
 /**
  Handles truncating and appending output and input file redireciton.
  Parses nonwhitespace after input or output redirection characters.
@@ -22,7 +24,7 @@ typedef struct {
  @param line current line to be processed
  @return 
  */
-int handleRedir(char *line);
+int handleRedir(char *line, int fdi, int fdo);
 
 /**
  Tokenizes line by whitespace and tries to call builtin command. 
@@ -30,7 +32,7 @@ int handleRedir(char *line);
  @param line current line to be processed
  @return Index of command run
  */
-int handleCmd(char *line);
+int handleCmd(char *line, int fdi, int fdo);
 
 /**
  Tokenizes a string by whitespace.
@@ -39,7 +41,7 @@ int handleCmd(char *line);
  @param maxtoks size of toks array
  @return number of tokens found
  */
-int tokenize(char *s, char *toks[], int maxtoks);
+int tokenize(char *s, char *toks[], int maxtoks, char *delim);
 
 /**
  Function body for exit builtin command.
@@ -63,14 +65,12 @@ int cdCmd(int argc, char *argv[]);
  @param argv Argument vector
  @return 0
  */
-int runCmd(int argc, char *argv[]);
+int runCmd(int argc, char *argv[], int fdi, int fdo);
 
 Command cmds[] = {
 	{"exit", &exitCmd},
 	{"cd", &cdCmd},
-	{"", &runCmd}
 };
-int fdi, fdo;
 
 int main(void){
 	char line[BUFSIZE];
@@ -105,19 +105,51 @@ int main(void){
 		// Skip empty lines
 		if(i == len) continue;
 
-		if(handleRedir(p) == 0) break;
+		if(handlePipes(p) == 0) break;
 	}
 	
 	exit(0);	
 }
 
-int handleRedir(char *line){
+int handlePipes(char *line){
+	int ret, n, i, nPipes;
+	char *toks[MAXTOKS];	
+	int pipes[MAXTOKS][2];
+	int fdi, fdo;
+
+	fdi = -1;
+	fdo = -1;
+
+	n = tokenize(line, toks, MAXTOKS, "|");
+	nPipes = n -2;
+	if(nPipes < 0) nPipes = 0;
+
+	for(i = 0; i < nPipes; i++){
+		pipe(pipes[i]);
+	}
+		
+	for(i = 0; i < n - 1; i++){
+		if(i == 0) fdi = -1;
+		else fdi = pipes[i-1][0]; // pipes[i-1] out
+
+		if(i == n - 2) fdo = -1;
+		else fdo = pipes[i][1]; // pipes[i] in
+	
+		ret = handleRedir(toks[i], fdi, fdo);
+		if(ret == 0) break;
+	}
+
+	for(i = 0; i < nPipes; i++){
+		close(pipes[i][0]);
+		close(pipes[i][1]);
+	}
+	return ret;
+}
+
+int handleRedir(char *line, int fdi, int fdo){
 	char *loc, *p;
 	char buf[BUFSIZE];
 	int i, j, len, truncate, flag;
-
-	fdi = -1;
-	fdo = -1;	
 
 	// Search for input redir
 	loc = strchr(line, '<');
@@ -199,40 +231,41 @@ int handleRedir(char *line){
 		return -1;
 	}
 
-	i = handleCmd(line);	
+	i = handleCmd(line, fdi, fdo);	
 	close(fdi);
 	close(fdo);
 	return i;
 }
 
-int handleCmd(char *line){
+int handleCmd(char *line, int fdi, int fdo){
 	static const int Ncmds = sizeof(cmds) / sizeof(Command);
 	int cmd, n;
 	char *toks[MAXTOKS];
 	
 	// Tokenize command
-	n = tokenize(line, toks, MAXTOKS);	
+	n = tokenize(line, toks, MAXTOKS, " \t");	
 	if(n == 0) return -1;
 
 	// Search through builtins or execute arbitrary command
-	for(cmd = 0; cmd < Ncmds - 1 && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
-	cmds[cmd].f(n, toks);
+	for(cmd = 0; cmd < Ncmds && strncmp(toks[0], cmds[cmd].name, strlen(toks[0])); cmd++);
+	if(cmd != Ncmds) cmds[cmd].f(n, toks);
+	else runCmd(n, toks, fdi, fdo);
 
 	return cmd;
 }
 
-int tokenize(char *s, char *toks[], int maxtoks){
+int tokenize(char *s, char *toks[], int maxtoks, char *delim){
 	int i;
 	char *p;
 
 	i = 0;
 	// Tokenize by whitespace
-	toks[i] = strtok(s, " \t");
+	toks[i] = strtok(s, delim); 
 	while(toks[i++] != NULL){
 		if(i >= maxtoks - 1){
 			toks[i] = NULL;
 		}else{
-			toks[i] = strtok(NULL, " \t");
+			toks[i] = strtok(NULL, delim);
 		}
 	}
 	return i;
@@ -259,7 +292,7 @@ int cdCmd(int argc, char *argv[]){
 	return 0;
 }
 
-int runCmd(int argc, char *argv[]){
+int runCmd(int argc, char *argv[], int fdi, int fdo){
 	pid_t CHPID;
 	int state;
 
