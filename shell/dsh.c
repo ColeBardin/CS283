@@ -188,6 +188,7 @@ int handleRedir(char *line, int fdi, int fdo){
 		// Remove redir from line
 		memset(p, ' ', loc - p + i);
 
+		// Give priority to pipes
 		if(fdi == -1){
 			fdi = open(buf, O_RDONLY);
 			if(fdi == -1){
@@ -234,6 +235,7 @@ int handleRedir(char *line, int fdi, int fdo){
 		}else{
 			flag = O_WRONLY | O_CREAT | O_APPEND;
 		}
+		// Give priority to pipes
 		if(fdo == -1){
 			fdo = open(buf, flag, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 			if(fdo == -1){
@@ -283,7 +285,6 @@ int tokenize(char *s, char *toks[], int maxtoks, char *delim){
 	char *p;
 
 	i = 0;
-	// Tokenize by whitespace
 	toks[i] = strtok(s, delim); 
 	while(toks[i++] != NULL){
 		if(i >= maxtoks - 1){
