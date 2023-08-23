@@ -4,11 +4,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <netdb.h>
+
+void *doSend(void *x);
+void *doRecv(void *x);
 
 int main(int argc, char **argv){
-	struct sockaddr_in saddr;
+	struct sockaddr_in caddr;
 	char *screenname, *hostname;
-	int port;
+	int sock, port, addrlen;
+	int sendTID, recvTID;
+	struct hostent *host;
+	
 
 	if(argc < 2 || argc > 4){
 		fprintf(stderr, "Error: no screen name provided\n");
@@ -26,9 +33,47 @@ int main(int argc, char **argv){
 		hostname = argv[2];
 	}
 	
+	host = gethostbyname(hostname);
+	printf("%s -> %d\n", hostname, *host->h_addr);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if(sock < 0){
+		perror("Socket");
+		exit(1);
+	}
+	caddr.sin_family = AF_INET;
+	caddr.sin_port = htons(port);
+	caddr.sin_addr.s_addr = *host->h_addr;
+
+	addrlen = sizeof(struct sockaddr_in);	
+	if(bind(sock, (struct sockaddr *)&caddr, addrlen) < 0){
+		perror("Bind");
+		exit(1);
+	}
+	
+	if(connect(sock, (struct sockaddr *)&caddr, addrlen)){
+		perror("Connect");
+		exit(1);
+	}	
+	pthread_create((pthread_t *)&sendTID, NULL, doSend, &sock);
+	//pthread_create((pthread_t *)&recvTID, NULL, doRecv, &sock);
+		
 	exit(0);
 }
 
+void *doSend(void *x){
+	int sock = *(int *)x;
+	
+	return NULL;
+}
+
+void *doRecv(void *x){
+	int sock = *(int *)x;
+	
+	return NULL;
+}
+
+//socket
+//bind
 //connect
 //gethostbyname
 //h_addr
@@ -36,3 +81,4 @@ int main(int argc, char **argv){
 // chatsrv on tux3
 // name is argv[1]
 // specify machine and port
+// shutdown

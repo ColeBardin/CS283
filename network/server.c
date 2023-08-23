@@ -83,10 +83,3 @@ void *doClient(void *arg){
 	return NULL;
 }
 
-//connect
-//gethostbyname
-//h_addr
-//pthreads for stdin to sock and stdout to sock
-// chatsrv on tux3
-// name is argv[1]
-// specify machine and port
