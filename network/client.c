@@ -5,18 +5,25 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 
-typedef struct Client Client;
-struct Client {
-	pthread_t tid;
-	int sock;
-	Client *next;
-};
-
-
 int main(int argc, char **argv){
-	if(argc < 2){
+	struct sockaddr_in saddr;
+	char *screenname, *hostname;
+	int port;
+
+	if(argc < 2 || argc > 4){
 		fprintf(stderr, "Error: no screen name provided\n");
+		fprintf(stderr, "Usage: ./client screenname [hostname [port]]\n");
 		exit(1);
+	}
+
+	screenname = argv[1];
+	hostname = "tux3";
+	port = 2023;
+	if(argc > 3){
+		port = atoi(argv[3]);
+	}
+	if(argc > 2){
+		hostname = argv[2];
 	}
 	
 	exit(0);
