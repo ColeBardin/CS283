@@ -89,7 +89,6 @@ void *doSend(void *x){
 
 	while(pthread_fault == 0){
 		if(fgets(buf, 256, stdin) == NULL) break;
-		//if(buf[strlen(buf) - 1] == '\n') buf[strlen(buf) - 1] = '\0';
 		if(send(t->sock, buf, strlen(buf) + 1, 0) < 0){
 			perror("Pthread Send");
 			break;
