@@ -74,10 +74,12 @@ int main(int argc, char **argv){
 	sendT.sock = sock;
 	recvT.sock = sock;
 	pthread_create(&sendT.tid, NULL, doSend, (void *)&sendT);
-	//pthread_create((pthread_t *)&recvTID, NULL, doRecv, &sock);
+	pthread_create(&recvT.tid, NULL, doRecv, (void *)&recvT);
 		
 	pthread_join(sendT.tid, NULL);
+	pthread_join(recvT.tid, NULL);
 
+	shutdown(sock, SHUT_RDWR);
 	exit(0);
 }
 
@@ -95,24 +97,29 @@ void *doSend(void *x){
 	}
 
 	pthread_fault = 1;
-	shutdown(t->sock, SHUT_RDWR);
+	pthread_exit(NULL);
 	
 	return NULL;
 }
 
 void *doRecv(void *x){
-	int sock = *(int *)x;
+	Thread *t = x;
+	char buf[256];
+
+	while(pthread_fault == 0){
+		if(recv(t->sock, buf, 256, 0) < 1){
+			perror("Pthread Recv");
+			break;
+		}
+		if(fputs(buf, stdout) == EOF){
+			perror("fputs");
+			break;
+		}
+	}
+	
+	pthread_fault = 1;
+	pthread_exit(NULL);
 	
 	return NULL;
 }
 
-//socket
-//bind
-//connect
-//gethostbyname
-//h_addr
-//pthreads for stdin to sock and stdout to sock
-// chatsrv on tux3
-// name is argv[1]
-// specify machine and port
-// shutdown
