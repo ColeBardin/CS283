@@ -28,7 +28,7 @@ int main(){
 		exit(1);
 	}
 	
-	laddr.sin_family = PF_INET;
+	laddr.sin_family = AF_INET;
 	laddr.sin_port = htons(2002);
 	laddr.sin_addr.s_addr = INADDR_ANY;
 	
