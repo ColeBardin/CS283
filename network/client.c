@@ -11,12 +11,11 @@ typedef struct Thread Thread;
 struct Thread{
 	int sock;
 	pthread_t tid;
+	pthread_t other;
 };
 
 void *doSend(void *x);
 void *doRecv(void *x);
-
-int pthread_fault;
 
 int main(int argc, char **argv){
 	struct sockaddr_in saddr;
@@ -70,15 +69,18 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 
-	pthread_fault = 0;
 	sendT.sock = sock;
 	recvT.sock = sock;
 	pthread_create(&sendT.tid, NULL, doSend, (void *)&sendT);
 	pthread_create(&recvT.tid, NULL, doRecv, (void *)&recvT);
+	
+	sendT.other = recvT.tid;
+	recvT.other = sendT.tid;
 		
 	pthread_join(sendT.tid, NULL);
 	pthread_join(recvT.tid, NULL);
 
+	printf("Closing socket\n");
 	shutdown(sock, SHUT_RDWR);
 	exit(0);
 }
@@ -86,8 +88,9 @@ int main(int argc, char **argv){
 void *doSend(void *x){
 	Thread *t = x;
 	char buf[256];
+	int n;
 
-	while(pthread_fault == 0){
+	while(1){
 		if(fgets(buf, 256, stdin) == NULL) break;
 		if(send(t->sock, buf, strlen(buf) + 1, 0) < 0){
 			perror("Pthread Send");
@@ -95,8 +98,8 @@ void *doSend(void *x){
 		}
 	}
 
-	pthread_fault = 1;
-	pthread_exit(NULL);
+	printf("Send fault\n");
+	pthread_cancel(t->other);
 	
 	return NULL;
 }
@@ -104,20 +107,23 @@ void *doSend(void *x){
 void *doRecv(void *x){
 	Thread *t = x;
 	char buf[256];
+	int n;
 
-	while(pthread_fault == 0){
-		if(recv(t->sock, buf, 256, 0) < 1){
+	while(1){
+		n = recv(t->sock, buf, 256, 0);
+		if(n < 1){
 			perror("Pthread Recv");
 			break;
 		}
+		buf[n + 1] = '\0';
 		if(fputs(buf, stdout) == EOF){
 			perror("fputs");
 			break;
 		}
 	}
 	
-	pthread_fault = 1;
-	pthread_exit(NULL);
+	printf("Receive fault\n");
+	pthread_cancel(t->other);
 	
 	return NULL;
 }
