@@ -28,6 +28,8 @@ int main(void){
 
 		// Read user's input
 		if(fgets(line, BUFSIZE, stdin) == NULL){
+			putchar('\n');
+			exitCmd(0, NULL);			
 			exit(0);
 		}
 		// Remove newline from line
