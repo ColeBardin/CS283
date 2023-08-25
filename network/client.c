@@ -1,11 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <pthread.h>
-#include <netdb.h>
 #include <string.h>
+#include <netdb.h>
+#include <pthread.h>
 
 typedef struct Thread Thread;
 struct Thread{
