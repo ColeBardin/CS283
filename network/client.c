@@ -22,13 +22,12 @@ int main(int argc, char **argv){
 	struct hostent *host;
 	Thread sendT;
 	Thread recvT;
-	
+
 	if(argc < 2 || argc > 4){
 		fprintf(stderr, "Error: no screen name provided\n");
 		fprintf(stderr, "Usage: ./client screenname [hostname [port]]\n");
 		exit(1);
 	}
-
 	screenname = argv[1];
 	hostname = "tux3";
 	port = 2023;
@@ -38,18 +37,20 @@ int main(int argc, char **argv){
 	if(argc > 2){
 		hostname = argv[2];
 	}
-	
+
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if(sock < 0){
 		perror("Socket");
 		exit(1);
 	}
-
 	host = gethostbyname(hostname);
+	if(host == NULL){
+		perror("Hostname resolution");
+		exit(1);
+	}
 	saddr.sin_family = AF_INET;
 	saddr.sin_port = htons(port);
 	memcpy((char *)&saddr.sin_addr.s_addr, host->h_addr, sizeof(host->h_length));
-
 	addrlen = sizeof(saddr);	
 
 	printf("Hostname: %s\n", hostname);
@@ -59,26 +60,24 @@ int main(int argc, char **argv){
 		perror("Connect");
 		exit(1);
 	}	
-	
-	printf("Connection successful\n");
 	if(send(sock, screenname, strlen(screenname) + 1, 0) < 0){
 		perror("Send");
 		exit(1);
 	}
+	printf("Successfully connected as: %s\n~~~~~~~~~~~~~~~~~~~~\n", screenname);
 
 	sendT.sock = sock;
 	recvT.sock = sock;
 	pthread_create(&sendT.tid, NULL, doSend, (void *)&sendT);
 	pthread_create(&recvT.tid, NULL, doRecv, (void *)&recvT);
-	
 	sendT.other = recvT.tid;
 	recvT.other = sendT.tid;
-		
 	pthread_join(sendT.tid, NULL);
 	pthread_join(recvT.tid, NULL);
 
 	printf("Closing socket\n");
 	shutdown(sock, SHUT_RDWR);
+
 	exit(0);
 }
 
@@ -95,7 +94,7 @@ void *doSend(void *x){
 		}
 	}
 
-	printf("Send fault\n");
+	printf("~~~~~~~~~~~~~~~~~~~~\nExiting send thread\n");
 	pthread_cancel(t->other);
 	
 	return NULL;
@@ -119,7 +118,7 @@ void *doRecv(void *x){
 		}
 	}
 	
-	printf("Receive fault\n");
+	printf("~~~~~~~~~~~~~~~~~~~~\nExiting recv thread\n");
 	pthread_cancel(t->other);
 	
 	return NULL;
